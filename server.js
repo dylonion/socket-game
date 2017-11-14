@@ -1,5 +1,24 @@
-const io = require('socket.io')();
-const PORT = 8000;
+const express = require('express')
+const path = require('path')
+const bodyParser= require('body-parser')
+const methodOverride = require('method-override')
+const coookieParser = require('cookie-parser')
+const session = require('express-session');
+const passport = require('passport')
+const PORT = process.env.PORT ||| 8000;
+
+const app = express();
+require('dotenv').config();
+
+const authRoutes = require('./routes/auth-routes');
+app.use('/auth', authRoutes);
+const userRoutes = require('./routes/user-routes');
+app.use('/user', userRoutes);
+
+const io = require('socket.io')(app);
+app.listen(PORT, () => {
+  console.log('listening on port', PORT)
+})
 
 const players={}
 io.on('connection', (client) => {
@@ -37,6 +56,9 @@ io.on('connection', (client) => {
   })
 });
 
-io.listen(PORT)
-
-console.log('listening on port', PORT)
+// io.listen(PORT)
+app.get('*', (req, res) => {
+  res.status(404).json({
+    message: 'Invalid route!',
+  });
+});
